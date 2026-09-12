@@ -53,7 +53,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release delete latest --cleanup-tag --yes || true
-          gh release create latest Bugcordhook.aar \
-            --title "Latest build" \
+          version="$(grep -oP '^version = "\K[^"]+' core/build.gradle.kts | head -n1)"
+          test -n "$version"
+          gh release delete "$version" --cleanup-tag --yes || true
+          gh release create "$version" Bugcordhook.aar \
+            --title "Bugcordhook $version" \
             --notes "Built from $GITHUB_SHA"

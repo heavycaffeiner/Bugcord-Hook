@@ -20,6 +20,8 @@ plugins {
     id("maven-publish")
 }
 
+version = "1.1.4"
+
 dependencies {
     @Suppress("NewerVersionAvailable")
     implementation("org.lsposed.lsplant:lsplant:6.4")
@@ -124,7 +126,7 @@ afterEvaluate {
             register(project.name, MavenPublication::class.java) {
                 group = "com.bugcord"
                 artifactId = "Bugcordhook"
-                version = "1.1.4"
+                version = project.version.toString()
 
                 from(components["release"])
             }
