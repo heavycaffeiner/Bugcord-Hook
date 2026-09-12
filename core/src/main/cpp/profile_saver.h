@@ -1,12 +1,12 @@
 /*
- * This file is part of AliuHook, a library providing XposedAPI bindings to LSPlant
+ * This file is part of BugcordHook, a library providing XposedAPI bindings to LSPlant
  * Copyright (c) 2021 Juby210 & Vendicated
  * Licensed under the Open Software License version 3.0
  */
 
-#ifndef ALIUHOOK_PROFILE_SAVER_H
-#define ALIUHOOK_PROFILE_SAVER_H
+#ifndef BUGCORDHOOK_PROFILE_SAVER_H
+#define BUGCORDHOOK_PROFILE_SAVER_H
 
 bool disable_profile_saver();
 
-#endif //ALIUHOOK_PROFILE_SAVER_H
+#endif //BUGCORDHOOK_PROFILE_SAVER_H

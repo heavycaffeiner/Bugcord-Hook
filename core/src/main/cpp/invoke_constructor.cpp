@@ -3,7 +3,7 @@
 //
 
 #include "invoke_constructor.h"
-#include "aliuhook.h"
+#include "bugcordhook.h"
 
 // Based on https://github.com/toolfactory/narcissus/blob/c81c3d0a6f0fb5ee8ab444d170db21ff7fe8a7ad/src/main/c/narcissus.c
 
@@ -167,7 +167,7 @@ bool unboxArgs(JNIEnv *env, jobject method, jobjectArray args, jsize argsCount, 
     // Get parameter types
     auto parameterTypes = (jobjectArray) env->CallObjectMethod(
             method,
-            AliuHook::android_version >= 26
+            BugcordHook::android_version >= 26
             ? Executable_getParameterTypes_methodID
             : AbstractMethod_getParameterTypes_methodID);
     if (env->ExceptionOccurred()) return false;

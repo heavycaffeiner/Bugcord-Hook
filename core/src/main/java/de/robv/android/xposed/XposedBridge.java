@@ -1,5 +1,5 @@
 /*
- * This file is part of AliuHook, a library providing XposedAPI bindings to LSPlant
+ * This file is part of BugcordHook, a library providing XposedAPI bindings to LSPlant
  * Copyright (c) 2021 Juby210 & Vendicated
  * Licensed under the Open Software License version 3.0
  *
@@ -17,7 +17,7 @@ import java.util.*;
 
 @SuppressWarnings({"unused", "JavaDoc"})
 public class XposedBridge {
-    private static final String TAG = "AliuHook-XposedBridge";
+    private static final String TAG = "BugcordHook-XposedBridge";
 
     static {
         try {
@@ -26,7 +26,7 @@ public class XposedBridge {
             throw new RuntimeException("Failed to initialize", t);
         }
 
-        System.loadLibrary("aliuhook");
+        System.loadLibrary("bugcordhook");
     }
 
     private static final Object[] EMPTY_ARRAY = new Object[0];
@@ -287,7 +287,7 @@ public class XposedBridge {
     public static final class CopyOnWriteSortedSet<E> {
         private transient volatile Object[] elements = EMPTY_ARRAY;
 
-        // Aliucord added
+        // Bugcord added
         public int size() {
             return elements.length;
         }
@@ -332,7 +332,7 @@ public class XposedBridge {
         }
     }
 
-    // Aliucord changed: public, so that it can be passed as lsplant context object
+    // Bugcord changed: public, so that it can be passed as lsplant context object
     public static class HookInfo {
         Member backup;
         private final Member method;
@@ -429,7 +429,7 @@ public class XposedBridge {
         }
     }
 
-    // Aliucord changed: private, so people don't abuse this
+    // Bugcord changed: private, so people don't abuse this
     private static void log(Throwable t) {
         Log.e(TAG, "Uncaught Exception", t);
     }

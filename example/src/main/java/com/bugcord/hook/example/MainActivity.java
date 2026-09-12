@@ -1,10 +1,10 @@
 /*
- * This file is part of AliuHook, an android java hooking library based on lsplant
+ * This file is part of BugcordHook, an android java hooking library based on lsplant
  * Copyright (c) 2021 Juby210 & Vendicated
  * Licensed under the Open Software License version 3.0
  */
 
-package com.aliucord.hook.example;
+package com.bugcord.hook.example;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -46,7 +46,7 @@ public class MainActivity extends Activity {
                 });
                 tv.setText(getContent() + "\nOriginal: " + XposedBridge.invokeOriginalMethod(MainActivity.class.getDeclaredMethod("getContent"), this, null));
             } catch (Throwable t) {
-                Log.e("AliuHook example", "bruh moment", t);
+                Log.e("BugcordHook example", "bruh moment", t);
             }
         });
     }

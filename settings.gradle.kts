@@ -17,14 +17,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven {
-            name = "aliucord"
-            url = uri("https://maven.aliucord.com/releases")
-        }
     }
 }
 
-rootProject.name = "Aliuhook"
+rootProject.name = "Bugcord-Hook"
 
 include(":example")
 include(":core")

@@ -1,4 +1,4 @@
-# AliuHook ![Maven metadata URL](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fmaven.aliucord.com%2Fsnapshots%2Fcom%2Faliucord%2FAliuhook%2Fmaven-metadata.xml)
+# BugcordHook
 
 Java Xposed Api for [LSPlant](https://github.com/LSPosed/LSPlant)
 
@@ -28,15 +28,15 @@ Additionally, XposedBridge contains these new methods:
 
 ## Get Started
 
+The library is built by this repository's CI and attached to the latest release as
+`Bugcordhook.aar`. Add the build as a composite so the coordinates below resolve locally:
+
 ```gradle
-repositories {
-    maven("https://maven.aliucord.com/releases")
-}
+// settings.gradle.kts
+includeBuild("Bugcord-Hook")
 
 dependencies {
-    // The dependency version can be changed to `main-SNAPSHOT` to target the latest build,
-    // or a short git commit hash to target a specific commit build.
-    implementation "com.aliucord:Aliuhook:1.1.3"
+    implementation("com.bugcord:Bugcordhook:1.1.4")
 }
 ```
 
@@ -55,5 +55,5 @@ XposedBridge.hookMethod(Activity.class.getDeclaredMethod("onCreate", Bundle.clas
 
 - [LSPlant](https://github.com/LSPosed/LSPlant) obviously
 - [Dobby](https://github.com/LSPosed/Dobby) - a lightweight, multi-platform, multi-architecture hook framework
-- [Pine](https://github.com/canyie/Pine) - AliuHook uses Pine's ElfImg parser
+- [Pine](https://github.com/canyie/Pine) - BugcordHook uses Pine's ElfImg parser
 - [Original Xposed API](https://github.com/rovo89/XposedBridge) 

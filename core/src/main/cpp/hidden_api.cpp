@@ -1,5 +1,5 @@
 /*
- * This file is part of AliuHook, a library providing XposedAPI bindings to LSPlant
+ * This file is part of BugcordHook, a library providing XposedAPI bindings to LSPlant
  * Copyright (c) 2021 Juby210 & Vendicated
  * Licensed under the Open Software License version 3.0
  */
@@ -7,15 +7,15 @@
 #include "hidden_api.h"
 
 #include "log.h"
-#include "aliuhook.h"
+#include "bugcordhook.h"
 
 bool disable_hidden_api(JNIEnv *env) {
     // Hidden api introduced in sdk 29
-    if (AliuHook::android_version < 29) {
+    if (BugcordHook::android_version < 29) {
         return true;
     }
 
-    void *addr = AliuHook::elf_img.GetSymbolAddress(
+    void *addr = BugcordHook::elf_img.GetSymbolAddress(
             "_ZN3artL32VMRuntime_setHiddenApiExemptionsEP7_JNIEnvP7_jclassP13_jobjectArray",
             true,
             /* match_prefix: OneUI appends a random set of numbers at the end */

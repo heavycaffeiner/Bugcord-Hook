@@ -2,14 +2,14 @@
 # documentation: https://d.android.com/studio/projects/add-native-code.html
 
 cmake_minimum_required(VERSION 3.18.1)
-project("aliuhook")
+project("bugcordhook")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include_directories(xz/linux/lib/xz xz/linux/include/linux xz/userspace)
 
-add_library(aliuhook SHARED
-        aliuhook.cpp
+add_library(bugcordhook SHARED
+        bugcordhook.cpp
         elf_img.cpp
         profile_saver.cpp
         hidden_api.cpp
@@ -24,4 +24,4 @@ add_library(aliuhook SHARED
 find_package(lsplant REQUIRED CONFIG)
 find_package(dobby REQUIRED CONFIG)
 
-target_link_libraries(aliuhook log lsplant::lsplant dobby::dobby)
+target_link_libraries(bugcordhook log lsplant::lsplant dobby::dobby)

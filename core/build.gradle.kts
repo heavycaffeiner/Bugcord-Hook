@@ -22,7 +22,7 @@ plugins {
 
 dependencies {
     @Suppress("NewerVersionAvailable")
-    implementation("com.aliucord.lsplant:lsplant:6.4-aliucord.4")
+    implementation("org.lsposed.lsplant:lsplant:6.4")
     implementation("io.github.vvb2060.ndk:dobby:1.2")
 
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
@@ -33,7 +33,7 @@ android {
     compileSdk = 36
     buildToolsVersion = "36.0.0"
     ndkVersion = "29.0.13599879" // r28+ compiles for 16-KiB aligned pages by default
-    namespace = "com.aliucord.hook.core"
+    namespace = "com.bugcord.hook.core"
 
     buildFeatures {
         buildConfig = false
@@ -122,39 +122,11 @@ afterEvaluate {
     publishing {
         publications {
             register(project.name, MavenPublication::class.java) {
-                group = "com.aliucord"
-                artifactId = "Aliuhook"
+                group = "com.bugcord"
+                artifactId = "Bugcordhook"
                 version = "1.1.4"
 
                 from(components["release"])
-            }
-
-            repositories {
-                val username = System.getenv("MAVEN_USERNAME")
-                val password = System.getenv("MAVEN_PASSWORD")
-                val releaseUsername = System.getenv("MAVEN_RELEASE_USERNAME")
-                val releasePassword = System.getenv("MAVEN_RELEASE_PASSWORD")
-
-                if (releaseUsername != null && releasePassword != null) {
-                    maven {
-                        setUrl("https://maven.aliucord.com/releases")
-                        credentials {
-                            this.username = releaseUsername
-                            this.password = releasePassword
-                        }
-                    }
-                }
-
-                // Publish to snapshots repo for backwards compatibility
-                if (username != null && password != null) {
-                    maven {
-                        setUrl("https://maven.aliucord.com/snapshots")
-                        credentials {
-                            this.username = username
-                            this.password = password
-                        }
-                    }
-                }
             }
         }
     }

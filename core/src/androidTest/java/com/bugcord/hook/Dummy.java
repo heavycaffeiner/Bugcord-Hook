@@ -1,4 +1,4 @@
-package com.aliucord.hook;
+package com.bugcord.hook;
 
 public class Dummy {
     public boolean initialized;

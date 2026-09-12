@@ -1,5 +1,5 @@
 /*
- * This file is part of AliuHook, a library providing XposedAPI bindings to LSPlant
+ * This file is part of BugcordHook, a library providing XposedAPI bindings to LSPlant
  * Copyright (c) 2021 Juby210 & Vendicated
  * Licensed under the Open Software License version 3.0
  */
@@ -17,13 +17,13 @@
 #include <sys/system_properties.h>
 #include <cstdlib>
 #include <cerrno>
-#include "aliuhook.h"
+#include "bugcordhook.h"
 #include "invoke_constructor.h"
 
-int AliuHook::android_version = -1;
-pine::ElfImg AliuHook::elf_img; // NOLINT(cert-err58-cpp)
+int BugcordHook::android_version = -1;
+pine::ElfImg BugcordHook::elf_img; // NOLINT(cert-err58-cpp)
 
-void AliuHook::init(int version) {
+void BugcordHook::init(int version) {
     elf_img.Init("libart.so", version);
     android_version = version;
 }
@@ -148,17 +148,17 @@ JNI_OnLoad(JavaVM *vm, void *) {
             return JNI_ERR;
         }
 
-        AliuHook::init(static_cast<int>(api_level));
+        BugcordHook::init(static_cast<int>(api_level));
     }
 
     lsplant::InitInfo initInfo{
             .inline_hooker = InlineHooker,
             .inline_unhooker = InlineUnhooker,
             .art_symbol_resolver = [](std::string_view symbol) -> void * {
-                return AliuHook::elf_img.GetSymbolAddress(symbol, false, false);
+                return BugcordHook::elf_img.GetSymbolAddress(symbol, false, false);
             },
             .art_symbol_prefix_resolver = [](std::string_view symbol) -> void * {
-                return AliuHook::elf_img.GetSymbolAddress(symbol, false, true);
+                return BugcordHook::elf_img.GetSymbolAddress(symbol, false, true);
             }
     };
 
@@ -170,7 +170,7 @@ JNI_OnLoad(JavaVM *vm, void *) {
 
     LOGI("lsplant init finished");
 
-    res = LoadInvokeConstructorCache(env, AliuHook::android_version);
+    res = LoadInvokeConstructorCache(env, BugcordHook::android_version);
     if (!res) {
         LOGE("invoke_constructor init failed");
         return JNI_ERR;

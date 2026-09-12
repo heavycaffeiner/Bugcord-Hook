@@ -2,8 +2,8 @@
 // Created by rushii on 2024-08-27.
 //
 
-#ifndef ALIUHOOK_INVOKE_CONSTRUCTOR_H
-#define ALIUHOOK_INVOKE_CONSTRUCTOR_H
+#ifndef BUGCORDHOOK_INVOKE_CONSTRUCTOR_H
+#define BUGCORDHOOK_INVOKE_CONSTRUCTOR_H
 
 #include "jni.h"
 
@@ -13,4 +13,4 @@ void UnloadInvokeConstructorCache(JNIEnv*);
 
 bool InvokeConstructorWithArgs(JNIEnv* env, jobject instance, jobject constructor, jobjectArray args);
 
-#endif //ALIUHOOK_INVOKE_CONSTRUCTOR_H
+#endif //BUGCORDHOOK_INVOKE_CONSTRUCTOR_H

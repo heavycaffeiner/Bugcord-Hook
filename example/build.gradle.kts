@@ -4,10 +4,10 @@ plugins {
 
 android {
     compileSdk = 36
-    namespace = "com.aliucord.hook.example"
+    namespace = "com.bugcord.hook.example"
 
     defaultConfig {
-        applicationId = "com.aliucord.hook.example"
+        applicationId = "com.bugcord.hook.example"
         minSdk = 21
         targetSdk = 36
         versionCode = 1
