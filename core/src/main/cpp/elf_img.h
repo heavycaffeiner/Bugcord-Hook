@@ -66,10 +66,12 @@ namespace pine {
         static constexpr const char* kSystemLibDir = "/system/lib64/";
         static constexpr const char* kApexRuntimeLibDir = "/apex/com.android.runtime/lib64/";
         static constexpr const char* kApexArtLibDir = "/apex/com.android.art/lib64/";
+        static constexpr const char* kApexGoogleArtLibDir = "/apex/com.google.android.art/lib64/";
 #else
         static constexpr const char* kSystemLibDir = "/system/lib/";
         static constexpr const char* kApexRuntimeLibDir = "/apex/com.android.runtime/lib/";
         static constexpr const char* kApexArtLibDir = "/apex/com.android.art/lib/";
+        static constexpr const char* kApexGoogleArtLibDir = "/apex/com.google.android.art/lib/";
 #endif
 
         const char* elf = nullptr;

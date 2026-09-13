@@ -39,10 +39,10 @@ jclass Double_class;
 jclass double_class;
 jmethodID Double_doubleValue_methodID;
 
-jclass Executable_class;
+jclass Executable_class = nullptr;
 jmethodID Executable_getParameterTypes_methodID;
 
-jclass AbstractMethod_class;
+jclass AbstractMethod_class = nullptr;
 jmethodID AbstractMethod_getParameterTypes_methodID;
 
 void throwIllegalArgumentException(JNIEnv* env, const char* message);
@@ -108,14 +108,20 @@ bool LoadInvokeConstructorCache(JNIEnv *env, int android_version) {
     if (android_version >= 26) {
         // https://cs.android.com/android/_/android/platform/libcore/+/e1f193f0f7ccd8a3c0557ec93055140c68546aa9
         // https://cs.android.com/android/_/android/platform/libcore/+/refs/tags/android-8.0.0_r1:ojluni/src/main/java/java/lang/reflect/Executable.java;l=222;drc=e77a467884a8b323a1ac6a229f06f9a032b141b5
-        Executable_class = env->FindClass("java/lang/reflect/Executable");
-        if (env->ExceptionOccurred()) return false;
+        jclass clazz = env->FindClass("java/lang/reflect/Executable");
+        if (env->ExceptionOccurred() || !clazz) return false;
+        Executable_class = (jclass)env->NewGlobalRef(clazz);
+        env->DeleteLocalRef(clazz);
+        if (!Executable_class) return false;
         Executable_getParameterTypes_methodID = env->GetMethodID(Executable_class, "getParameterTypes", "()[Ljava/lang/Class;");
         if (env->ExceptionOccurred()) return false;
     } else {
         // https://cs.android.com/android/_/android/platform/libcore/+/refs/tags/android-7.0.0_r1:libart/src/main/java/java/lang/reflect/AbstractMethod.java;l=160;drc=f04099d77872a0742db6f67263e7edc0828a8af6
-        AbstractMethod_class = env->FindClass("java/lang/reflect/AbstractMethod");
-        if (env->ExceptionOccurred()) return false;
+        jclass clazz = env->FindClass("java/lang/reflect/AbstractMethod");
+        if (env->ExceptionOccurred() || !clazz) return false;
+        AbstractMethod_class = (jclass)env->NewGlobalRef(clazz);
+        env->DeleteLocalRef(clazz);
+        if (!AbstractMethod_class) return false;
         AbstractMethod_getParameterTypes_methodID = env->GetMethodID(AbstractMethod_class, "getParameterTypes", "()[Ljava/lang/Class;");
         if (env->ExceptionOccurred()) return false;
     }
@@ -140,8 +146,14 @@ void UnloadInvokeConstructorCache(JNIEnv* env) {
     env->DeleteGlobalRef(float_class);
     env->DeleteGlobalRef(Double_class);
     env->DeleteGlobalRef(double_class);
-    env->DeleteGlobalRef(Executable_class);
-    env->DeleteGlobalRef(AbstractMethod_class);
+    if (Executable_class != nullptr) {
+        env->DeleteGlobalRef(Executable_class);
+        Executable_class = nullptr;
+    }
+    if (AbstractMethod_class != nullptr) {
+        env->DeleteGlobalRef(AbstractMethod_class);
+        AbstractMethod_class = nullptr;
+    }
 }
 
 bool InvokeConstructorWithArgs(JNIEnv *env, jobject instance, jobject constructor, jobjectArray args) {

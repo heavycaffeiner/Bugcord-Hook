@@ -35,6 +35,7 @@ static size_t page_size_;
 #define ALIGN_UP(addr, page_size)           (((addr) + ((page_size) - 1)) & ~((page_size) - 1))
 
 static bool Unprotect(void *addr) {
+    if (page_size_ == 0) page_size_ = static_cast<size_t>(sysconf(_SC_PAGESIZE));
     auto addr_uint = reinterpret_cast<uintptr_t>(addr);
     auto page_aligned_prt = reinterpret_cast<void *>(ALIGN_DOWN(addr_uint, page_size_));
     size_t size = page_size_;
@@ -44,18 +45,19 @@ static bool Unprotect(void *addr) {
 
     int result = mprotect(page_aligned_prt, size, PROT_READ | PROT_WRITE | PROT_EXEC);
     if (result == -1) {
-        LOGE("mprotect failed for %p: %s (%d)", addr, strerror(errno), errno);
-        return false;
+        result = mprotect(page_aligned_prt, size, PROT_READ | PROT_WRITE);
+        if (result == -1) {
+            LOGW("mprotect failed for %p: %s (%d)", addr, strerror(errno), errno);
+            return false;
+        }
     }
     return true;
 }
 
 void *InlineHooker(void *address, void *replacement) {
-    if (!Unprotect(address)) {
-        return nullptr;
-    }
+    Unprotect(address);
 
-    void *origin_call;
+    void *origin_call = nullptr;
     if (DobbyHook(address, replacement, &origin_call) == RS_SUCCESS) {
         return origin_call;
     } else {

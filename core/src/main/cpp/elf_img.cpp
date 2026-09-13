@@ -17,6 +17,7 @@
 #include <string>
 #include "log.h"
 #include <fcntl.h>
+#include <cinttypes>
 #include "xz.h"
 // Pine changed: namespace
 using namespace pine;
@@ -247,30 +248,51 @@ bool ElfImg::xzdecompress() {
 }
 
 void ElfImg::RelativeOpen(const char *elf, bool warn_if_symtab_not_found) {
-    char buffer[64] = {0}; // We assume that the path length doesn't exceed 64 bytes.
-    if (android_version >= 29) {
-        // Android R: com.android.art
-        strcpy(buffer, kApexArtLibDir);
-        strcat(buffer, elf);
-        if (CanRead(buffer)) {
-            Open(buffer, warn_if_symtab_not_found);
-            return;
+    FILE *maps = fopen("/proc/self/maps", "re");
+    if (maps) {
+        char line[512];
+        char search_term[128];
+        snprintf(search_term, sizeof(search_term), "/%s", elf);
+        size_t search_len = strlen(search_term);
+
+        while (fgets(line, sizeof(line), maps)) {
+            size_t len = strlen(line);
+            while (len > 0 && (line[len - 1] == '\n' || line[len - 1] == '\r' || line[len - 1] == ' ')) {
+                line[--len] = '\0';
+            }
+            if (len >= search_len && strcmp(line + len - search_len, search_term) == 0) {
+                char *path = strchr(line, '/');
+                if (path && CanRead(path)) {
+                    fclose(maps);
+                    Open(path, warn_if_symtab_not_found);
+                    return;
+                }
+            }
         }
-
-        memset(buffer, 0, sizeof(buffer));
-
-        // Android Q: com.android.runtime
-        strcpy(buffer, kApexRuntimeLibDir);
-        strcat(buffer, elf);
-        if (CanRead(buffer)) {
-            Open(buffer, warn_if_symtab_not_found);
-            return;
-        }
-
-        memset(buffer, 0, sizeof(buffer));
+        fclose(maps);
     }
-    strcpy(buffer, kSystemLibDir);
-    strcat(buffer, elf);
+
+    char buffer[256] = {0};
+    if (android_version >= 29) {
+        snprintf(buffer, sizeof(buffer), "%s%s", kApexArtLibDir, elf);
+        if (CanRead(buffer)) {
+            Open(buffer, warn_if_symtab_not_found);
+            return;
+        }
+
+        snprintf(buffer, sizeof(buffer), "%s%s", kApexGoogleArtLibDir, elf);
+        if (CanRead(buffer)) {
+            Open(buffer, warn_if_symtab_not_found);
+            return;
+        }
+
+        snprintf(buffer, sizeof(buffer), "%s%s", kApexRuntimeLibDir, elf);
+        if (CanRead(buffer)) {
+            Open(buffer, warn_if_symtab_not_found);
+            return;
+        }
+    }
+    snprintf(buffer, sizeof(buffer), "%s%s", kSystemLibDir, elf);
     Open(buffer, warn_if_symtab_not_found);
 }
 
@@ -344,17 +366,41 @@ void *ElfImg::GetSymbolAddress(std::string_view name, bool warn_if_missing, bool
 }
 
 void *ElfImg::GetModuleBase(const char *name) {
-    FILE *maps;
-    char buff[256];
-    off_t load_addr;
-    // Pine changed: Use bool to instead of int
+    FILE *maps = fopen("/proc/self/maps", "re");
+    if (!maps) {
+        LOGE("failed to open /proc/self/maps");
+        return nullptr;
+    }
+
+    char buff[512];
+    uintptr_t load_addr = 0;
     bool found = false;
-    // Pine changed: add "e" to mode
-    maps = fopen("/proc/self/maps", "re");
+
+    // First attempt: exact match in line
     while (fgets(buff, sizeof(buff), maps)) {
         if (strstr(buff, name) && (strstr(buff, "r-xp") || strstr(buff, "r--p"))) {
             found = true;
             break;
+        }
+    }
+
+    // Second attempt: match by basename if exact path was not found
+    if (!found) {
+        const char *base_name = strrchr(name, '/');
+        if (base_name) {
+            rewind(maps);
+            size_t base_len = strlen(base_name);
+            while (fgets(buff, sizeof(buff), maps)) {
+                size_t len = strlen(buff);
+                while (len > 0 && (buff[len - 1] == '\n' || buff[len - 1] == '\r' || buff[len - 1] == ' ')) {
+                    buff[--len] = '\0';
+                }
+                if (len >= base_len && strcmp(buff + len - base_len, base_name) == 0 &&
+                    (strstr(buff, "r-xp") || strstr(buff, "r--p"))) {
+                    found = true;
+                    break;
+                }
+            }
         }
     }
 
@@ -364,8 +410,10 @@ void *ElfImg::GetModuleBase(const char *name) {
         return nullptr;
     }
 
-    if (sscanf(buff, "%lx", &load_addr) != 1)
+    if (sscanf(buff, "%" PRIxPTR, &load_addr) != 1 &&
+        sscanf(buff, "%lx", reinterpret_cast<unsigned long *>(&load_addr)) != 1) {
         LOGE("failed to read load address for %s", name);
+    }
 
     fclose(maps);
 
