@@ -20,11 +20,11 @@ plugins {
     id("maven-publish")
 }
 
-version = "1.1.6"
+version = "1.1.7"
 
 dependencies {
     @Suppress("NewerVersionAvailable")
-    implementation("org.lsposed.lsplant:lsplant:6.4")
+    implementation("com.aliucord.lsplant:lsplant:6.4-aliucord.4")
     implementation("io.github.vvb2060.ndk:dobby:1.2")
 
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
