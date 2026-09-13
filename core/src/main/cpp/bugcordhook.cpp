@@ -28,45 +28,68 @@ void BugcordHook::init(int version) {
     android_version = version;
 }
 
-static size_t page_size_;
+static size_t page_size_ = 0;
 
 // Macros to align addresses to page boundaries
 #define ALIGN_DOWN(addr, page_size)         ((addr) & -(page_size))
 #define ALIGN_UP(addr, page_size)           (((addr) + ((page_size) - 1)) & ~((page_size) - 1))
 
-static bool Unprotect(void *addr) {
-    if (page_size_ == 0) page_size_ = static_cast<size_t>(sysconf(_SC_PAGESIZE));
-    auto addr_uint = reinterpret_cast<uintptr_t>(addr);
-    auto page_aligned_prt = reinterpret_cast<void *>(ALIGN_DOWN(addr_uint, page_size_));
-    size_t size = page_size_;
-    if (ALIGN_UP(addr_uint + page_size_, page_size_) != ALIGN_UP(addr_uint, page_size_)) {
-        size += page_size_;
-    }
+void *InlineHooker(void *address, void *replacement) {
+    if (!address || !replacement) return nullptr;
 
-    int result = mprotect(page_aligned_prt, size, PROT_READ | PROT_WRITE | PROT_EXEC);
-    if (result == -1) {
-        result = mprotect(page_aligned_prt, size, PROT_READ | PROT_WRITE);
-        if (result == -1) {
-            LOGW("mprotect failed for %p: %s (%d)", addr, strerror(errno), errno);
-            return false;
+    if (page_size_ == 0) page_size_ = static_cast<size_t>(sysconf(_SC_PAGESIZE));
+
+    uintptr_t start = ALIGN_DOWN(reinterpret_cast<uintptr_t>(address), page_size_);
+    uintptr_t end = ALIGN_UP(reinterpret_cast<uintptr_t>(address) + 64, page_size_);
+    size_t len = end - start;
+
+    if (mprotect(reinterpret_cast<void *>(start), len, PROT_READ | PROT_WRITE | PROT_EXEC) != 0) {
+        if (mprotect(reinterpret_cast<void *>(start), len, PROT_READ | PROT_WRITE) != 0) {
+            LOGW("mprotect RW failed for %p: %s (%d)", address, strerror(errno), errno);
+            return nullptr;
         }
     }
-    return true;
-}
-
-void *InlineHooker(void *address, void *replacement) {
-    Unprotect(address);
 
     void *origin_call = nullptr;
-    if (DobbyHook(address, replacement, &origin_call) == RS_SUCCESS) {
+    auto status = DobbyHook(address, replacement, &origin_call);
+
+    if (mprotect(reinterpret_cast<void *>(start), len, PROT_READ | PROT_EXEC) != 0) {
+        LOGE("mprotect RX restore failed for %p: %s (%d)", address, strerror(errno), errno);
+    }
+    __builtin___clear_cache(reinterpret_cast<char *>(start), reinterpret_cast<char *>(end));
+
+    if (status == RS_SUCCESS) {
         return origin_call;
     } else {
+        LOGW("DobbyHook failed for %p with error %d", address, status);
         return nullptr;
     }
 }
 
 bool InlineUnhooker(void *func) {
-    return DobbyDestroy(func) == RT_SUCCESS;
+    if (!func) return false;
+
+    if (page_size_ == 0) page_size_ = static_cast<size_t>(sysconf(_SC_PAGESIZE));
+
+    uintptr_t start = ALIGN_DOWN(reinterpret_cast<uintptr_t>(func), page_size_);
+    uintptr_t end = ALIGN_UP(reinterpret_cast<uintptr_t>(func) + 64, page_size_);
+    size_t len = end - start;
+
+    if (mprotect(reinterpret_cast<void *>(start), len, PROT_READ | PROT_WRITE | PROT_EXEC) != 0) {
+        if (mprotect(reinterpret_cast<void *>(start), len, PROT_READ | PROT_WRITE) != 0) {
+            LOGW("mprotect RW failed for %p: %s (%d)", func, strerror(errno), errno);
+            return false;
+        }
+    }
+
+    bool success = (DobbyDestroy(func) == RT_SUCCESS);
+
+    if (mprotect(reinterpret_cast<void *>(start), len, PROT_READ | PROT_EXEC) != 0) {
+        LOGE("mprotect RX restore failed for %p: %s (%d)", func, strerror(errno), errno);
+    }
+    __builtin___clear_cache(reinterpret_cast<char *>(start), reinterpret_cast<char *>(end));
+
+    return success;
 }
 
 extern "C"
